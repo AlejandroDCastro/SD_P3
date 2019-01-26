@@ -1,0 +1,52 @@
+Algoritmo ServidorPROTOCOLO(puerto)
+// Características: de texto, petición/respuesta, transporte seguro
+// Servicio en puerto (protocolo de aplicación)
+{
+  sfdServer = ObtenerSocket(puerto);            // Obtenemos un nuevo socket asociado al puerto
+
+  for ever {                                    // Bucle para siempre
+    sfdClient = ConectarConCliente(sfdServer);  // Espera que entre solicitud
+
+    switch (fork()) {                       
+      case -1:                                  // Error en fork, Salimos
+          close(sfdClient);                     // Cerramos el socket para comunicarnos
+          close(sfdServer);                     // Cerramos el socket para escuchar
+          exit;                                 // Salimos de la aplicación con error
+
+      case  0:                                  // El hijo atiende la nueva solicitud y sale
+          close(sfdServidor);                   // Cerramos el socket para escuchar
+          AtenderProtocoloPROTOCOLO(sfdClient); // Punto de entrada para el PROTOCOLO
+          close(sfdClient);                     // Cerramos el socket para comunicarnos con el cliente
+          exit;                                 // Terminamos el proceso hijo
+
+      default:                                  // El padre se queda a la espera de nuevas conexiones
+          close(sfdCliente);                    // Cerramos el socket para comunicarnos con el cliente
+    }
+  }
+}
+
+
+ObtenerSocket(puerto): socket
+{
+  socket = socket("Internet", "TCP"));          // Creamos un nuevo socket
+  connect(socket, puerto);                      // Lo asociamos con el puerto donde escuchará
+  listen(socket);                               // Le decimos que escuche
+
+  return socket;
+}
+
+
+ConectarConCliente(socketServidor): socketCliente
+{
+  socketCliente = accept(socketServidor);       // Si entra solicitud, devuelve socket para comunicar
+  return socketCliente;
+}
+
+
+AtenderProtocoloPROTOCOLO(int sfdClient)
+{
+  read(sfdClient, solicitud);                   // Leemos solicitud del cliente
+  respuesta = tratarSolicitud(solicitud);       // Analizamos la solicitud y preparamos respuesta
+  write(sfdSClient, respuesta);                 // Enviamos respuesta al cliente
+} 
+
